@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador e Baixador de HTML</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .input-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .url-input-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .url-input:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+        
+        .fetch-button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .fetch-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .fetch-button:active {
+            transform: translateY(0);
+        }
+        
+        .upload-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+            background-color: #f8f9fa;
+        }
+        
+        .upload-container {
+            border: 2px dashed #6a11cb;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-container:hover {
+            background-color: #f0f2ff;
+        }
+        
+        .upload-container.dragover {
+            background-color: #e6e9ff;
+            border-color: #2575fc;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #6a11cb;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .upload-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .disclaimer {
+            background-color: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .result-section {
+            padding: 30px;
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .download-button, .preview-button {
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-button {
+            background-color: #28a745;
+        }
+        
+        .download-button:hover {
+            background-color: #218838;
+        }
+        
+        .preview-button {
+            background-color: #17a2b8;
+        }
+        
+        .preview-button:hover {
+            background-color: #138496;
+        }
+        
+        .html-container {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .preview-section {
+            padding: 30px;
+            display: none;
+        }
+        
+        .preview-container {
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            height: 500px;
+            overflow: auto;
+            background-color: white;
+        }
+        
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .url-input-container {
+                flex-direction: column;
+            }
+            
+            .url-input {
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            
+            .fetch-button {
+                border-radius: 5px;
+                padding: 15px;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Visualizador e Baixador de HTML</h1>
+            <p class="subtitle">Visualize, baixe e faça upload de arquivos HTML para pré-visualização</p>
+        </header>
+        
+        <section class="input-section">
+            <div class="url-input-container">
+                <input type="text" class="url-input" placeholder="https://exemplo.com" value="https://">
+                <button class="fetch-button">Visualizar HTML</button>
+            </div>
+            
+            <div class="disclaimer">
+                <strong>Atenção:</strong> Devido a restrições de segurança (CORS), alguns sites podem não permitir que seu conteúdo seja acessado diretamente por esta ferramenta. Para esses casos, recomendamos usar um proxy CORS ou uma solução de servidor.
+            </div>
+        </section>
+        
+        <section class="upload-section">
+            <div class="upload-container" id="uploadContainer">
+                <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                </div>
+                <p class="upload-text">Arraste e solte seu arquivo HTML aqui ou clique para selecionar</p>
+                <input type="file" class="file-input" id="fileInput" accept=".html,.htm">
+                <button class="upload-button" id="uploadButton">Selecionar Arquivo</button>
+            </div>
+        </section>
+        
+        <section class="result-section" id="resultSection">
+            <div class="result-header">
+                <h2 class="result-title">Código HTML</h2>
+                <div class="action-buttons">
+                    <button class="download-button" id="downloadButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Baixar HTML
+                    </button>
+                    <button class="preview-button" id="previewButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                        Visualizar Site
+                    </button>
+                </div>
+            </div>
+            <div class="html-container" id="htmlContainer">
+                <!-- O HTML do site será exibido aqui -->
+            </div>
+        </section>
+        
+        <section class="preview-section" id="previewSection">
+            <div class="result-header">
+                <h2 class="result-title">Pré-visualização do Site</h2>
+                <button class="preview-button" id="backToHtmlButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    </svg>
+                    Voltar ao Código
+                </button>
+            </div>
+            <div class="preview-container">
+                <iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts"></iframe>
+            </div>
+        </section>
+        
+        <div class="error-message" id="errorMessage">
+            <!-- Mensagens de erro serão exibidas aqui -->
+        </div>
+        
+        <footer>
+            <p>Ferramenta de visualização e download de HTML &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.querySelector('.url-input');
+            const fetchButton = document.querySelector('.fetch-button');
+            const resultSection = document.getElementById('resultSection');
+            const htmlContainer = document.getElementById('htmlContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const downloadButton = document.getElementById('downloadButton');
+            const previewButton = document.getElementById('previewButton');
+            const previewSection = document.getElementById('previewSection');
+            const previewIframe = document.getElementById('previewIframe');
+            const backToHtmlButton = document.getElementById('backToHtmlButton');
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('uploadButton');
+            const uploadContainer = document.getElementById('uploadContainer');
+            
+            let currentHtmlContent = '';
+            let currentUrl = '';
+            
+            // Função para buscar o HTML de um site
+            async function fetchHTML(url) {
+                try {
+                    // Usando um proxy CORS para contornar restrições
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const response = await fetch(proxyUrl + encodeURIComponent(url));
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const html = await response.text();
+                    return html;
+                } catch (error) {
+                    throw new Error(`Não foi possível acessar o site: ${error.message}`);
+                }
+            }
+            
+            // Função para baixar o HTML
+            function downloadHTML() {
+                if (!currentHtmlContent) {
+                    showError('Nenhum conteúdo HTML para baixar.');
+                    return;
+                }
+                
+                try {
+                    // Extrair o nome do domínio para nomear o arquivo
+                    let domain = 'site';
+                    try {
+                        const urlObj = new URL(currentUrl);
+                        domain = urlObj.hostname;
+                    } catch (e) {
+                        // Se não for uma URL válida, usar um nome padrão
+                    }
+                    
+                    // Criar um blob com o conteúdo HTML
+                    const blob = new Blob([currentHtmlContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Criar um link de download
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${domain}-index.html`;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Limpar
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                    
+                } catch (error) {
+                    showError('Erro ao baixar o arquivo: ' + error.message);
+                }
+            }
+            
+            // Função para visualizar o HTML
+            function previewHTML() {
+                if (!currentHtmlContent) {
+                    showError('Nenhum conteúdo HTML para visualizar.');
+                    return;
+                }
+                
+                try {
+                    // Criar um blob com o conteúdo HTML
+                    const blob = new Blob([currentHtmlContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Carregar no iframe
+                    previewIframe.src = url;
+                    
+                    // Mostrar a seção de pré-visualização
+                    resultSection.style.display = 'none';
+                    previewSection.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    
+                    // Rolar para a seção de pré-visualização
+                    previewSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    showError('Erro ao visualizar o HTML: ' + error.message);
+                }
+            }
+            
+            // Função para voltar ao código HTML
+            function backToHTML() {
+                previewSection.style.display = 'none';
+                resultSection.style.display = 'block';
+                resultSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Evento de clique no botão de visualizar
+            fetchButton.addEventListener('click', async function() {
+                const url = urlInput.value.trim();
+                currentUrl = url;
+                
+                // Validação básica da URL
+                if (!url || url === 'https://') {
+                    showError('Por favor, insira uma URL válida.');
+                    return;
+                }
+                
+                // Mostrar indicador de carregamento
+                fetchButton.textContent = 'Carregando...';
+                fetchButton.disabled = true;
+                
+                try {
+                    const html = await fetchHTML(url);
+                    
+                    // Armazenar o conteúdo HTML para download posterior
+                    currentHtmlContent = html;
+                    
+                    // Exibir o resultado
+                    htmlContainer.textContent = html;
+                    resultSection.style.display = 'block';
+                    previewSection.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                    
+                    // Rolar para a seção de resultados
+                    resultSection.scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    showError(error.message);
+                    resultSection.style.display = 'none';
+                    previewSection.style.display = 'none';
+                } finally {
+                    // Restaurar o botão
+                    fetchButton.textContent = 'Visualizar HTML';
+                    fetchButton.disabled = false;
+                }
+            });
+            
+            // Evento de clique no botão de download
+            downloadButton.addEventListener('click', downloadHTML);
+            
+            // Evento de clique no botão de visualizar site
+            previewButton.addEventListener('click', previewHTML);
+            
+            // Evento de clique no botão de voltar ao código
+            backToHtmlButton.addEventListener('click', backToHTML);
+            
+            // Evento de clique no botão de upload
+            uploadButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Evento de seleção de arquivo
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+            
+            // Eventos de drag and drop
+            uploadContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadContainer.classList.add('dragover');
+            });
+            
+            uploadContainer.addEventListener('dragleave', function() {
+                uploadContainer.classList.remove('dragover');
+            });
+            
+            uploadContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadContainer.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileUpload(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Função para processar o upload de arquivo
+            function handleFileUpload(file) {
+                // Verificar se é um arquivo HTML
+                if (!file.type.includes('html') && !file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+                    showError('Por favor, selecione um arquivo HTML válido.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        currentHtmlContent = e.target.result;
+                        currentUrl = file.name;
+                        
+                        // Exibir o resultado
+                        htmlContainer.textContent = currentHtmlContent;
+                        resultSection.style.display = 'block';
+                        previewSection.style.display = 'none';
+                        errorMessage.style.display = 'none';
+                        
+                        // Rolar para a seção de resultados
+                        resultSection.scrollIntoView({ behavior: 'smooth' });
+                    } catch (error) {
+                        showError('Erro ao processar o arquivo: ' + error.message);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showError('Erro ao ler o arquivo.');
+                };
+                
+                reader.readAsText(file);
+            }
+            
+            // Função para exibir mensagens de erro
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // Rolar para a mensagem de erro
+                errorMessage.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Permitir enviar com Enter
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    fetchButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
